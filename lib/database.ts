@@ -1,41 +1,26 @@
-import sqlite3 from 'sqlite3'
-import { promisify } from 'util'
-import path from 'path'
-import fs from 'fs'
+import { Photo } from '@/types/photo'
 
-const dbPath = path.join(process.cwd(), 'data', 'photos.db')
+// Simple in-memory storage for Vercel deployment
+// In production, you'd want to use a proper database like PostgreSQL
+let photos: Photo[] = []
 
-// Ensure data directory exists
-const dataDir = path.dirname(dbPath)
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true })
-}
-
-const db = new sqlite3.Database(dbPath)
-
-// Promisify database methods
-const dbRun = promisify(db.run.bind(db))
-const dbGet = promisify(db.get.bind(db))
-const dbAll = promisify(db.all.bind(db))
-
-// Initialize database
 export async function initDatabase() {
-  await dbRun(`
-    CREATE TABLE IF NOT EXISTS photos (
-      id TEXT PRIMARY KEY,
-      filename TEXT NOT NULL,
-      originalName TEXT NOT NULL,
-      customName TEXT,
-      description TEXT,
-      dateTaken TEXT NOT NULL,
-      uploadDate TEXT NOT NULL,
-      filePath TEXT NOT NULL,
-      thumbnailPath TEXT,
-      fileSize INTEGER NOT NULL,
-      width INTEGER,
-      height INTEGER
-    )
-  `)
+  // No-op for in-memory storage
+  return Promise.resolve()
 }
 
-export { dbRun, dbGet, dbAll }
+export async function savePhoto(photo: Photo): Promise<void> {
+  photos.push(photo)
+}
+
+export async function getAllPhotos(): Promise<Photo[]> {
+  return photos
+}
+
+export async function deletePhoto(photoId: string): Promise<void> {
+  photos = photos.filter(photo => photo.id !== photoId)
+}
+
+export async function getPhotoById(photoId: string): Promise<Photo | null> {
+  return photos.find(photo => photo.id === photoId) || null
+}

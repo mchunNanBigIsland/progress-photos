@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { initDatabase, dbRun } from '@/lib/database'
-import { savePhoto, createThumbnail, getImageMetadata } from '@/lib/fileUtils'
+import { initDatabase, savePhoto } from '@/lib/database'
+import { savePhoto as savePhotoFile, createThumbnail, getImageMetadata } from '@/lib/fileUtils'
 import { Photo } from '@/types/photo'
 
 export async function POST(request: NextRequest) {
@@ -21,15 +21,15 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Save photo to date-based folder
-    const { filePath, filename } = await savePhoto(
+    // For Vercel, we'll simulate file saving
+    const { filePath, filename } = await savePhotoFile(
       buffer,
       file.name,
       dateTaken || new Date().toISOString(),
       customName || undefined
     )
 
-    // Create thumbnail
+    // Create thumbnail path
     const thumbnailPath = await createThumbnail(filePath, filename.split('_')[1])
 
     // Get image metadata
@@ -52,17 +52,7 @@ export async function POST(request: NextRequest) {
       height: metadata.height,
     }
 
-    await dbRun(`
-      INSERT INTO photos (
-        id, filename, originalName, customName, description, 
-        dateTaken, uploadDate, filePath, thumbnailPath, 
-        fileSize, width, height
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      photo.id, photo.filename, photo.originalName, photo.customName,
-      photo.description, photo.dateTaken, photo.uploadDate, photo.filePath,
-      photo.thumbnailPath, photo.fileSize, photo.width, photo.height
-    ])
+    await savePhoto(photo)
 
     return NextResponse.json(photo)
   } catch (error) {

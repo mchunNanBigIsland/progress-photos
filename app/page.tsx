@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Upload, Camera, Calendar, FileText, Download } from 'lucide-react'
 import PhotoUpload from '@/components/PhotoUpload'
 import PhotoGallery from '@/components/PhotoGallery'
@@ -9,6 +9,26 @@ import { Photo } from '@/types/photo'
 export default function Home() {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('upload')
+  const [loading, setLoading] = useState(true)
+
+  // Load photos on component mount
+  useEffect(() => {
+    const loadPhotos = async () => {
+      try {
+        const response = await fetch('/api/photos')
+        if (response.ok) {
+          const photosData = await response.json()
+          setPhotos(photosData)
+        }
+      } catch (error) {
+        console.error('Error loading photos:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPhotos()
+  }, [])
 
   const handlePhotoUpload = useCallback((newPhoto: Photo) => {
     setPhotos(prev => [newPhoto, ...prev])
@@ -17,6 +37,17 @@ export default function Home() {
   const handlePhotoDelete = useCallback((photoId: string) => {
     setPhotos(prev => prev.filter(photo => photo.id !== photoId))
   }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

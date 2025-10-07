@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { initDatabase, dbGet } from '@/lib/database'
-import fs from 'fs/promises'
-import path from 'path'
+import { initDatabase, getPhotoById } from '@/lib/database'
 
 export async function GET(
   request: NextRequest,
@@ -10,42 +8,24 @@ export async function GET(
   try {
     await initDatabase()
     
-    const photo = await dbGet('SELECT * FROM photos WHERE id = ?', [params.id]) as any
+    const photo = await getPhotoById(params.id)
     
     if (!photo) {
       return new NextResponse('Photo not found', { status: 404 })
     }
 
-    const filePath = path.join(process.cwd(), photo.filePath)
+    // For Vercel, we'll return a placeholder
+    // In production, you'd serve the actual file from storage
+    const placeholderText = `Photo: ${photo.customName || photo.originalName}\nDescription: ${photo.description || 'No description'}\nDate: ${photo.dateTaken}`
     
-    try {
-      const fileBuffer = await fs.readFile(filePath)
-      const contentType = getContentType(photo.filename)
-      const downloadName = photo.customName || photo.originalName
-      
-      return new NextResponse(fileBuffer, {
-        headers: {
-          'Content-Type': contentType,
-          'Content-Disposition': `attachment; filename="${downloadName}"`,
-        },
-      })
-    } catch (error) {
-      return new NextResponse('File not found', { status: 404 })
-    }
+    return new NextResponse(placeholderText, {
+      headers: {
+        'Content-Type': 'text/plain',
+        'Content-Disposition': `attachment; filename="${photo.customName || photo.originalName}.txt"`,
+      },
+    })
   } catch (error) {
     console.error('Error downloading image:', error)
     return new NextResponse('Internal server error', { status: 500 })
   }
-}
-
-function getContentType(filename: string): string {
-  const ext = path.extname(filename).toLowerCase()
-  const contentTypes: Record<string, string> = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.webp': 'image/webp',
-  }
-  return contentTypes[ext] || 'application/octet-stream'
 }

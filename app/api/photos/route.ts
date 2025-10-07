@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
-import { initDatabase, dbAll } from '@/lib/database'
-import { Photo } from '@/types/photo'
+import { initDatabase, getAllPhotos } from '@/lib/database'
 
 export async function GET() {
   try {
     await initDatabase()
     
-    const photos = await dbAll('SELECT * FROM photos ORDER BY dateTaken DESC') as Photo[]
+    const photos = await getAllPhotos()
     
     return NextResponse.json(photos)
   } catch (error) {

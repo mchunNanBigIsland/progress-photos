@@ -11,6 +11,8 @@ const nextConfig = {
       sizeLimit: '10mb',
     },
   },
+  // Vercel-specific configuration
+  output: 'standalone',
 }
 
 module.exports = nextConfig
