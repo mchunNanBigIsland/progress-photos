@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initDatabase, getPhotoById } from '@/lib/database'
+import fs from 'fs'
+import path from 'path'
 
 export async function GET(
   request: NextRequest,
@@ -14,8 +16,29 @@ export async function GET(
       return new NextResponse('Photo not found', { status: 404 })
     }
 
-    // For Vercel, we'll return a placeholder
-    // In production, you'd serve the actual file from storage
+    // Check if the file exists in the custom directory
+    if (fs.existsSync(photo.filePath)) {
+      const fileBuffer = fs.readFileSync(photo.filePath)
+      const fileExtension = path.extname(photo.filePath).toLowerCase()
+      
+      let contentType = 'image/jpeg'
+      if (fileExtension === '.png') contentType = 'image/png'
+      else if (fileExtension === '.gif') contentType = 'image/gif'
+      else if (fileExtension === '.webp') contentType = 'image/webp'
+      
+      const downloadFilename = photo.customName ? 
+        `${photo.customName}${fileExtension}` : 
+        photo.originalName
+      
+      return new NextResponse(fileBuffer, {
+        headers: {
+          'Content-Type': contentType,
+          'Content-Disposition': `attachment; filename="${downloadFilename}"`,
+        },
+      })
+    }
+
+    // Fallback to placeholder if file doesn't exist
     const placeholderText = `Photo: ${photo.customName || photo.originalName}\nDescription: ${photo.description || 'No description'}\nDate: ${photo.dateTaken}`
     
     return new NextResponse(placeholderText, {

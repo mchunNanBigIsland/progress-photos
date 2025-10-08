@@ -1,4 +1,5 @@
 import { Photo } from '@/types/photo'
+import { deletePhoto as deletePhotoFile } from './fileUtils'
 
 // Simple in-memory storage for Vercel deployment
 // In production, you'd want to use a proper database like PostgreSQL
@@ -18,6 +19,11 @@ export async function getAllPhotos(): Promise<Photo[]> {
 }
 
 export async function deletePhoto(photoId: string): Promise<void> {
+  const photo = photos.find(p => p.id === photoId)
+  if (photo) {
+    // Delete the actual files from the filesystem
+    await deletePhotoFile(photo.filePath, photo.thumbnailPath)
+  }
   photos = photos.filter(photo => photo.id !== photoId)
 }
 
