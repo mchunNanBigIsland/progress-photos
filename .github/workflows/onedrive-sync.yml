@@ -1,0 +1,65 @@
+name: Sync Progress Photos to OneDrive
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'types/**'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync-to-onedrive:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build the application
+      run: npm run build
+      
+    - name: Create OneDrive sync package
+      run: |
+        mkdir -p onedrive-sync
+        cp -r app onedrive-sync/
+        cp -r components onedrive-sync/
+        cp -r lib onedrive-sync/
+        cp -r types onedrive-sync/
+        cp package.json onedrive-sync/
+        cp README.md onedrive-sync/
+        cp .gitignore onedrive-sync/
+        cp -r .next onedrive-sync/ 2>/dev/null || true
+        
+    - name: Create sync info file
+      run: |
+        echo "Sync Date: $(date)" > onedrive-sync/sync-info.txt
+        echo "Commit: ${{ github.sha }}" >> onedrive-sync/sync-info.txt
+        echo "Branch: ${{ github.ref_name }}" >> onedrive-sync/sync-info.txt
+        echo "Repository: ${{ github.repository }}" >> onedrive-sync/sync-info.txt
+        
+    - name: Upload to OneDrive
+      uses: skauthi/onedrive-upload-github-action@v1.2.1
+      with:
+        ONEDRIVE_CLIENT_ID: ${{ secrets.ONEDRIVE_CLIENT_ID }}
+        ONEDRIVE_CLIENT_SECRET: ${{ secrets.ONEDRIVE_CLIENT_SECRET }}
+        ONEDRIVE_REFRESH_TOKEN: ${{ secrets.ONEDRIVE_REFRESH_TOKEN }}
+        ONEDRIVE_FOLDER_PATH: '/24-077_Hilo_WWTP_PH1/J8_Pics/J80-Progress/Code-Sync'
+        LOCAL_FOLDER_PATH: './onedrive-sync'
+        OVERWRITE: true
+        
+    - name: Notify sync completion
+      run: |
+        echo "✅ Progress Photos app synced to OneDrive successfully!"
+        echo "📁 Location: /24-077_Hilo_WWTP_PH1/J8_Pics/J80-Progress/Code-Sync"
+        echo "🕒 Sync time: $(date)"
