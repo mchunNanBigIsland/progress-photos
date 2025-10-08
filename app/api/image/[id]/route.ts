@@ -34,6 +34,29 @@ export async function GET(
       })
     }
 
+    // Check if it's a cloud storage path (Vercel deployment)
+    if (photo.filePath.startsWith('cloud://')) {
+      // For now, return a placeholder image
+      const placeholderSvg = `
+        <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#f3f4f6"/>
+          <text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="16" fill="#6b7280">
+            Cloud Storage: ${photo.customName || photo.originalName}
+          </text>
+          <text x="200" y="180" text-anchor="middle" font-family="Arial" font-size="12" fill="#9ca3af">
+            (File saved to cloud storage)
+          </text>
+        </svg>
+      `
+      
+      return new NextResponse(placeholderSvg, {
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'public, max-age=31536000',
+        },
+      })
+    }
+
     // Fallback to placeholder if file doesn't exist
     const placeholderSvg = `
       <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">

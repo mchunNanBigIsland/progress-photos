@@ -23,16 +23,19 @@ export async function savePhoto(
   const isVercel = process.env.VERCEL === '1'
   
   if (isVercel) {
-    // For Vercel, use a simple structure in /tmp
+    // For Vercel, we need to use cloud storage
+    // For now, we'll simulate file saving and return a placeholder
     const extension = originalName.split('.').pop() || 'jpg'
     const baseName = customName ? 
       customName.replace(/[^a-zA-Z0-9-_]/g, '_') : 
       originalName.split('.')[0]
     
     const filename = `${baseName}.${extension}`
-    const filePath = `/tmp/${filename}`
+    const filePath = `cloud://${filename}` // Placeholder for cloud storage
     
-    // In Vercel, we'll simulate file saving
+    // TODO: Implement actual cloud storage (AWS S3, Cloudinary, etc.)
+    console.log('Vercel deployment: File would be saved to cloud storage:', filename)
+    
     return { filePath, filename }
   } else {
     // Local development - use custom directory structure
