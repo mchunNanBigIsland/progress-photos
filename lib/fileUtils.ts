@@ -41,7 +41,7 @@ export async function savePhoto(
     customName.replace(/[^a-zA-Z0-9-_]/g, '_') : 
     originalName.split('.')[0]
   
-  const filename = `${baseName}_${photoId}.${extension}`
+  const filename = `${baseName}.${extension}`
   const fullPath = path.join(dayDir, filename)
   
   // Write the file to the custom directory
@@ -90,6 +90,32 @@ export async function getImageMetadata(filePath: string) {
   }
 }
 
+export async function createDescriptionFile(
+  filePath: string,
+  customName: string,
+  description: string,
+  dateTaken: string
+): Promise<string> {
+  const descriptionPath = filePath.replace(/\.[^/.]+$/, '_description.txt')
+  
+  const descriptionContent = `Photo Description
+================
+
+Photo Name: ${customName}
+Date Taken: ${new Date(dateTaken).toLocaleDateString()}
+Description: ${description}
+
+File Path: ${filePath}
+Created: ${new Date().toLocaleString()}
+
+---
+This description file is linked to the photo: ${path.basename(filePath)}
+`
+  
+  fs.writeFileSync(descriptionPath, descriptionContent)
+  return descriptionPath
+}
+
 export async function deletePhoto(filePath: string, thumbnailPath?: string) {
   try {
     // Delete the main photo file
@@ -102,6 +128,13 @@ export async function deletePhoto(filePath: string, thumbnailPath?: string) {
     if (thumbnailPath && fs.existsSync(thumbnailPath)) {
       fs.unlinkSync(thumbnailPath)
       console.log(`Deleted thumbnail: ${thumbnailPath}`)
+    }
+    
+    // Delete the description file if it exists
+    const descriptionPath = filePath.replace(/\.[^/.]+$/, '_description.txt')
+    if (fs.existsSync(descriptionPath)) {
+      fs.unlinkSync(descriptionPath)
+      console.log(`Deleted description: ${descriptionPath}`)
     }
   } catch (error) {
     console.error('Error deleting files:', error)

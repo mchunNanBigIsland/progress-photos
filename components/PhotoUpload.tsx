@@ -169,7 +169,7 @@ export default function PhotoUpload({ onPhotoUpload }: PhotoUploadProps) {
                         value={data.customName}
                         onChange={(e) => updateUploadData(index, 'customName', e.target.value)}
                         placeholder="Enter a custom name for this photo"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       />
                     </div>
                     
@@ -182,7 +182,7 @@ export default function PhotoUpload({ onPhotoUpload }: PhotoUploadProps) {
                         type="date"
                         value={data.dateTaken}
                         onChange={(e) => updateUploadData(index, 'dateTaken', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       />
                     </div>
                   </div>
@@ -196,7 +196,7 @@ export default function PhotoUpload({ onPhotoUpload }: PhotoUploadProps) {
                       onChange={(e) => updateUploadData(index, 'description', e.target.value)}
                       placeholder="Add a description for this photo..."
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
                   </div>
                 </div>

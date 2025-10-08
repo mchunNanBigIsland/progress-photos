@@ -26,6 +26,15 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+/* Ensure input fields always have black text */
+input, textarea, select {
+  color: #000000 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280 !important;
+}
+
 .upload-area {
   border: 2px dashed #ccc;
   border-radius: 8px;

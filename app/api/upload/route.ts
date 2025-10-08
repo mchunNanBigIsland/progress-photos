@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initDatabase, savePhoto } from '@/lib/database'
-import { savePhoto as savePhotoFile, createThumbnail, getImageMetadata } from '@/lib/fileUtils'
+import { savePhoto as savePhotoFile, createThumbnail, getImageMetadata, createDescriptionFile, generatePhotoId } from '@/lib/fileUtils'
 import { Photo } from '@/types/photo'
 
 export async function POST(request: NextRequest) {
@@ -32,11 +32,22 @@ export async function POST(request: NextRequest) {
     // Create thumbnail path
     const thumbnailPath = await createThumbnail(filePath, filename.split('_')[1])
 
+    // Create description file if description is provided
+    let descriptionPath = undefined
+    if (description && description.trim()) {
+      descriptionPath = await createDescriptionFile(
+        filePath,
+        customName || file.name,
+        description,
+        dateTaken || new Date().toISOString()
+      )
+    }
+
     // Get image metadata
     const metadata = await getImageMetadata(filePath)
 
     // Save to database
-    const photoId = filename.split('_')[1].split('.')[0]
+    const photoId = generatePhotoId()
     const photo: Photo = {
       id: photoId,
       filename,
