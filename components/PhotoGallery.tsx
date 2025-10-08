@@ -10,7 +10,6 @@ interface PhotoGalleryProps {
 }
 
 export default function PhotoGallery({ photos, onPhotoDelete }: PhotoGalleryProps) {
-
   const handleDelete = async (photoId: string) => {
     if (!confirm('Are you sure you want to delete this photo?')) return
 
