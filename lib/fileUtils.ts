@@ -71,28 +71,37 @@ export async function createThumbnail(
   filePath: string,
   photoId: string
 ): Promise<string> {
-  // Create thumbnails in a subdirectory of the main progress photos directory
-  const baseDir = 'C:\\Users\\mchun\\OneDrive - Nan Inc\\Desktop\\OneDrive - Nan Inc\\24-077_Hilo_WWTP_PH1\\J8_Pics\\J80-Progress'
-  const thumbnailsDir = path.join(baseDir, 'thumbnails')
+  // Check if we're in Vercel environment
+  const isVercel = process.env.VERCEL === '1'
   
-  // Ensure thumbnails directory exists
-  if (!fs.existsSync(thumbnailsDir)) {
-    fs.mkdirSync(thumbnailsDir, { recursive: true })
+  if (isVercel) {
+    // For Vercel, create thumbnails in /tmp
+    const thumbnailPath = `/tmp/thumbnails/${photoId}.jpg`
+    return thumbnailPath
+  } else {
+    // Local development - create thumbnails in custom directory
+    const baseDir = 'C:\\Users\\mchun\\OneDrive - Nan Inc\\Desktop\\OneDrive - Nan Inc\\24-077_Hilo_WWTP_PH1\\J8_Pics\\J80-Progress'
+    const thumbnailsDir = path.join(baseDir, 'thumbnails')
+    
+    // Ensure thumbnails directory exists
+    if (!fs.existsSync(thumbnailsDir)) {
+      fs.mkdirSync(thumbnailsDir, { recursive: true })
+    }
+    
+    const thumbnailPath = path.join(thumbnailsDir, `${photoId}.jpg`)
+    
+    try {
+      // Create thumbnail using sharp
+      await sharp(filePath)
+        .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toFile(thumbnailPath)
+    } catch (error) {
+      console.error('Error creating thumbnail:', error)
+    }
+    
+    return thumbnailPath
   }
-  
-  const thumbnailPath = path.join(thumbnailsDir, `${photoId}.jpg`)
-  
-  try {
-    // Create thumbnail using sharp
-    await sharp(filePath)
-      .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80 })
-      .toFile(thumbnailPath)
-  } catch (error) {
-    console.error('Error creating thumbnail:', error)
-  }
-  
-  return thumbnailPath
 }
 
 export async function getImageMetadata(filePath: string) {

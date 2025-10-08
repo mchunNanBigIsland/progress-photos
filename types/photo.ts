@@ -7,7 +7,7 @@ export interface Photo {
   dateTaken: string
   uploadDate: string
   filePath: string
-  thumbnailPath?: string
+  thumbnailPath: string
   fileSize: number
   width?: number
   height?: number
@@ -15,7 +15,7 @@ export interface Photo {
 
 export interface PhotoUploadData {
   file: File
-  customName?: string
-  description?: string
-  dateTaken?: string
+  customName: string
+  description: string
+  dateTaken: string
 }
