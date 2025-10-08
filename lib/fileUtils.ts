@@ -19,35 +19,52 @@ export async function savePhoto(
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   
-  // Custom directory structure for progress photos
-  const baseDir = 'C:\\Users\\mchun\\OneDrive - Nan Inc\\Desktop\\OneDrive - Nan Inc\\24-077_Hilo_WWTP_PH1\\J8_Pics\\J80-Progress'
-  const yearDir = path.join(baseDir, year.toString())
-  const monthDir = path.join(yearDir, month)
-  const dayDir = path.join(monthDir, day)
+  // Check if we're in Vercel environment
+  const isVercel = process.env.VERCEL === '1'
   
-  // Ensure directories exist
-  if (!fs.existsSync(yearDir)) {
-    fs.mkdirSync(yearDir, { recursive: true })
+  if (isVercel) {
+    // For Vercel, use a simple structure in /tmp
+    const extension = originalName.split('.').pop() || 'jpg'
+    const baseName = customName ? 
+      customName.replace(/[^a-zA-Z0-9-_]/g, '_') : 
+      originalName.split('.')[0]
+    
+    const filename = `${baseName}.${extension}`
+    const filePath = `/tmp/${filename}`
+    
+    // In Vercel, we'll simulate file saving
+    return { filePath, filename }
+  } else {
+    // Local development - use custom directory structure
+    const baseDir = 'C:\\Users\\mchun\\OneDrive - Nan Inc\\Desktop\\OneDrive - Nan Inc\\24-077_Hilo_WWTP_PH1\\J8_Pics\\J80-Progress'
+    const yearDir = path.join(baseDir, year.toString())
+    const monthDir = path.join(yearDir, month)
+    const dayDir = path.join(monthDir, day)
+    
+    // Ensure directories exist
+    if (!fs.existsSync(yearDir)) {
+      fs.mkdirSync(yearDir, { recursive: true })
+    }
+    if (!fs.existsSync(monthDir)) {
+      fs.mkdirSync(monthDir, { recursive: true })
+    }
+    if (!fs.existsSync(dayDir)) {
+      fs.mkdirSync(dayDir, { recursive: true })
+    }
+    
+    const extension = originalName.split('.').pop() || 'jpg'
+    const baseName = customName ? 
+      customName.replace(/[^a-zA-Z0-9-_]/g, '_') : 
+      originalName.split('.')[0]
+    
+    const filename = `${baseName}.${extension}`
+    const fullPath = path.join(dayDir, filename)
+    
+    // Write the file to the custom directory
+    fs.writeFileSync(fullPath, file)
+    
+    return { filePath: fullPath, filename }
   }
-  if (!fs.existsSync(monthDir)) {
-    fs.mkdirSync(monthDir, { recursive: true })
-  }
-  if (!fs.existsSync(dayDir)) {
-    fs.mkdirSync(dayDir, { recursive: true })
-  }
-  
-  const extension = originalName.split('.').pop() || 'jpg'
-  const baseName = customName ? 
-    customName.replace(/[^a-zA-Z0-9-_]/g, '_') : 
-    originalName.split('.')[0]
-  
-  const filename = `${baseName}.${extension}`
-  const fullPath = path.join(dayDir, filename)
-  
-  // Write the file to the custom directory
-  fs.writeFileSync(fullPath, file)
-  
-  return { filePath: fullPath, filename }
 }
 
 export async function createThumbnail(
